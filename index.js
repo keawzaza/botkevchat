@@ -11,8 +11,28 @@ const mysqlConfig = {
   host: 'localhost',
   user: 'root',
   password: '',
-  database: 'line',
+  database: 'project',
 };
+
+function unixTimeToTimestamp(unixTimeInMilliseconds) {
+  // Create a new Date object with the Unix time in milliseconds
+  const date = new Date(unixTimeInMilliseconds);
+
+  // Get the individual components of the date and time
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+
+  // Construct the timestamp string
+  const timestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+  return timestamp;
+}
+
 
 async function insertData(data) {
   const connection = mysql.createConnection(mysqlConfig);
@@ -26,13 +46,17 @@ async function insertData(data) {
   const {  userId } = data.source;
   const {  text } = data.message;
   const {  timestamp } = data;
+  //const workStatus = "รับงาน";
 
-  connection.query(query, [userId, text, timestamp], (error, results) => {
+  const time = unixTimeToTimestamp(timestamp)
+  console.log("time = ",time);
+
+  connection.query(query, [userId, text, time], (error, results) => {
     if (error) {
       console.error('Error inserting data into MySQL:', error);
       throw error;
     }
-    console.log('Data inserted successfully into MySQL ',[userId, text, timestamp]);
+    console.log('Data inserted successfully into MySQL ',[userId, text, time]);
   });
 
   connection.end();
